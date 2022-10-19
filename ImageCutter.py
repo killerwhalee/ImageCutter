@@ -17,7 +17,10 @@ def imgBottomTrim(image, whiteSpace):
     image = image.crop(recroppedRegion)
     return image
 
-def imgBinaryCrop(src, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startNum = 1, numDigit = 0):
+def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startNum = 1, numDigit = 0):
+
+    if not dest:
+        dest = src
 
     image = Image.open(src)
     width, height = image.size
