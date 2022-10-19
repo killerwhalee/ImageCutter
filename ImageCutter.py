@@ -1,8 +1,22 @@
 import os
 from pdf2image import convert_from_path as pdf
 from PIL import Image
-from tkinter import filedialog
     
+def imgBottomTrim(image, whiteSpace):
+    #Image Bottom Trimming
+    bottomLine = 0
+    width, height = image.size
+    
+    for heightPixel in range(height):
+        for widthPixel in range(int(width * 0.5)):
+            if image.getpixel((widthPixel, heightPixel)) != (255, 255, 255):
+                bottomLine = heightPixel
+                break
+
+    recroppedRegion = 0, 0, width, bottomLine + 2 * whiteSpace
+    image = image.crop(recroppedRegion)
+    return image
+
 def imgBinaryCrop(src, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startNum = 1, numDigit = 0):
 
     image = Image.open(src)
@@ -24,13 +38,14 @@ def imgBinaryCrop(src, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startN
             if croppedImage.getpixel((widthPixel, heightPixel)) != (255, 255, 255):
                 if widthPixel < width * cropCheckRange[0]:
                     if boundRange[1]:
-                        recroppedRegion = 0, boundRange[0] - whiteSpace, width, boundRange[1] + whiteSpace * 2
+                        recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
 
                         imageStr = str(imageCount)
                         if numDigit:
                             imageStr = "0" * (numDigit - len(str(imageCount))) + str(imageCount)
 
-                        outputImage = croppedImage.crop(recroppedRegion)
+                        unTrimmedImage = croppedImage.crop(recroppedRegion)
+                        outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
                         outputImage.save(f"{os.path.splitext(src)[0]}_{imageStr}.png")
 
                         imageCount += 1
@@ -47,13 +62,13 @@ def imgBinaryCrop(src, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startN
     if not boundRange[1]:
         return
 
-    recroppedRegion = 0, boundRange[0] - whiteSpace, width, boundRange[1] + whiteSpace * 2
+    recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
     
     imageStr = str(imageCount)
-    if numDigit:
-        imageStr = "0" * (numDigit - len(str(imageCount))) + str(imageCount)
+    imageStr = "0" * (numDigit - len(str(imageCount))) + str(imageCount)
 
-    outputImage = croppedImage.crop(recroppedRegion)
+    unTrimmedImage = croppedImage.crop(recroppedRegion)
+    outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
     outputImage.save(f"{os.path.splitext(src)[0]}_{imageStr}.png")
 
     imageCount += 1
@@ -61,39 +76,7 @@ def imgBinaryCrop(src, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startN
     return imageCount
 
 
-## ImageCutter as Main function
-## This is for developer mode, not for client!
+## Block user to use module in itself
 
 if __name__ == "__main__":
-    # Temporary set
-    leftFirstCropRange  = (0.1006, 0.2086, 0.4983, 0.9068)
-    rightFirstCropRange = (0.5147, 0.2086, 0.9125, 0.9068)
-
-    leftCropRange  = (0.1006, 0.1250, 0.4983, 0.9068)
-    rightCropRange = (0.5147, 0.1250, 0.9125, 0.9068)
-
-    srcList = filedialog.askopenfilenames(title = "Select PDF files to cut", filetypes = [("PDF Files", ".pdf")])
-
-    for src in srcList:
-
-        pageNum = 1
-        imageCount = 1
-        pdfFile = pdf(src, dpi = 600)
-        fileName, fileExt = os.path.splitext(src)
-
-        for pdfImage in pdfFile:
-            pdfImage.save(f"{fileName}.png")
-
-            if pageNum % 4 == 1:
-                left  = leftFirstCropRange
-                right = rightFirstCropRange
-            else:
-                left  = leftCropRange
-                right = rightCropRange
-            
-            imageCount = imgBinaryCrop(f"{fileName}.png", cropRange = left, cropCheckRange = (0.0358, 0.0645), startNum = imageCount, numDigit = 2)
-            imageCount = imgBinaryCrop(f"{fileName}.png", cropRange = right, cropCheckRange = (0.0358, 0.0645), startNum = imageCount, numDigit = 2)
-
-            os.remove(f"{fileName}.png")
-            pageNum += 1
-
+    pass
