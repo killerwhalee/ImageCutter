@@ -20,7 +20,9 @@ def imgBottomTrim(image, whiteSpace):
 def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startNum = 1, numDigit = 0):
 
     if not dest:
-        dest = src
+        dest = os.path.splitext(src)[0]
+    else:
+        dest = os.path.splitext(dest)[0]
 
     image = Image.open(src)
     width, height = image.size
@@ -32,7 +34,7 @@ def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (
     whiteSpace = int(height * 0.005)
 
     ## Variable Set
-    imageCount = startNum
+    imageCount = 0
     boundRange  = [0, 0]
         
     #Cut Each Paragraph in Cropped Page
@@ -43,13 +45,13 @@ def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (
                     if boundRange[1]:
                         recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
 
-                        imageStr = str(imageCount)
+                        imageStr = str(startNum + imageCount)
                         if numDigit:
-                            imageStr = "0" * (numDigit - len(str(imageCount))) + str(imageCount)
+                            imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
 
                         unTrimmedImage = croppedImage.crop(recroppedRegion)
                         outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
-                        outputImage.save(f"{os.path.splitext(src)[0]}_{imageStr}.png")
+                        outputImage.save(f"{dest}_{imageStr}.png")
 
                         imageCount += 1
                         boundRange = [0, 0]
@@ -62,24 +64,15 @@ def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (
                 
                 break
 
-    if not boundRange[1]:
-        return
-
     recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
     
-    imageStr = str(imageCount)
-    imageStr = "0" * (numDigit - len(str(imageCount))) + str(imageCount)
+    imageStr = str(startNum + imageCount)
+    imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
 
     unTrimmedImage = croppedImage.crop(recroppedRegion)
     outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
-    outputImage.save(f"{os.path.splitext(src)[0]}_{imageStr}.png")
+    outputImage.save(f"{dest}_{imageStr}.png")
 
     imageCount += 1
 
     return imageCount
-
-
-## Block user to use module in itself
-
-if __name__ == "__main__":
-    pass
