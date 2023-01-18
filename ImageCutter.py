@@ -1,4 +1,5 @@
 import os
+import json
 from pdf2image import convert_from_path as pdf
 from PIL import Image
 
