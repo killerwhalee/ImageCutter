@@ -13,9 +13,32 @@ def imgBottomTrim(image, whiteSpace):
                 bottomLine = heightPixel
                 break
 
-    recroppedRegion = 0, 0, width, bottomLine + 2 * whiteSpace
+    recroppedRegion = 0, 0, width, min(bottomLine + 2 * whiteSpace, height)
     image = image.crop(recroppedRegion)
     return image
+
+def imgRawCrop(src, dest = None, cropRange = (0, 0, 1, 1), startNum = 1, numDigit = 0):
+    if not dest:
+        dest = os.path.splitext(src)[0]
+    else:
+        dest = os.path.splitext(dest)[0]
+
+    image = Image.open(src)
+    width, height = image.size
+    imageCount = 0
+    
+    ## Crop Image
+    imageCropArea = (int(cropRange[0] * width), int(cropRange[1] * height), int(cropRange[2] * width), int(cropRange[3] * height))
+    croppedImage = image.crop(imageCropArea)
+
+    imageStr = str(startNum + imageCount)
+    if numDigit:
+        imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
+
+    croppedImage.save(f"{dest}_{imageStr}.png")
+
+    return 1
+
 
 def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (0, 0), startNum = 1, numDigit = 0):
 
@@ -43,17 +66,20 @@ def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (
             if croppedImage.getpixel((widthPixel, heightPixel)) != (255, 255, 255):
                 if widthPixel < width * cropCheckRange[0]:
                     if boundRange[1]:
-                        recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
+                        recroppedRegion = 0, max(boundRange[0] - whiteSpace, 0), width, heightPixel - whiteSpace
+                        croppedHeight = (heightPixel - 1) - max(boundRange[0] - whiteSpace, 0)
 
-                        imageStr = str(startNum + imageCount)
-                        if numDigit:
-                            imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
+                        if boundRange[0]:
+                            imageStr = str(startNum + imageCount)
+                            if numDigit:
+                                imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
 
-                        unTrimmedImage = croppedImage.crop(recroppedRegion)
-                        outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
-                        outputImage.save(f"{dest}_{imageStr}.png")
+                            unTrimmedImage = croppedImage.crop(recroppedRegion)
+                            outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
+                            outputImage.save(f"{dest}_{imageStr}.png")
 
-                        imageCount += 1
+                            imageCount += 1
+                        
                         boundRange = [0, 0]
                     
                     if not boundRange[0]:
@@ -64,15 +90,18 @@ def imgBinaryCrop(src, dest = None, cropRange = (0, 0, 1, 1), cropCheckRange = (
                 
                 break
 
-    recroppedRegion = 0, boundRange[0] - whiteSpace, width, heightPixel - whiteSpace
+    recroppedRegion = 0, max(boundRange[0] - whiteSpace, 0), width, heightPixel - whiteSpace
+    croppedHeight = (heightPixel - 1) - max(boundRange[0] - whiteSpace, 0)
     
-    imageStr = str(startNum + imageCount)
-    imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
+    
+    if boundRange[0]:
+        imageStr = str(startNum + imageCount)
+        imageStr = "0" * (numDigit - len(str(startNum + imageCount))) + str(startNum + imageCount)
 
-    unTrimmedImage = croppedImage.crop(recroppedRegion)
-    outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
-    outputImage.save(f"{dest}_{imageStr}.png")
+        unTrimmedImage = croppedImage.crop(recroppedRegion)
+        outputImage = imgBottomTrim(unTrimmedImage, whiteSpace)
+        outputImage.save(f"{dest}_{imageStr}.png")
 
-    imageCount += 1
+        imageCount += 1
 
     return imageCount
