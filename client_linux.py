@@ -2,7 +2,7 @@
 
 import os
 import json
-from pdf2image import convert_from_bytes as pdf
+import time
 from ImageCutter import *
 
 ## Start output
@@ -38,7 +38,10 @@ while True:
                 continue
             
         print(f"Running {len(srcList)} files with {cropMode}...")
+        start = time.time()
         run(srcList, cropMode = cropMode)
+        end = time.time()
+        print(f"Process Done({end - start:.1f}s).")
         srcList = []
 
     elif src == ":q":
