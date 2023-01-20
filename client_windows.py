@@ -4,11 +4,12 @@ import os
 import json
 import time
 from tkinter import filedialog
-from pdf2image import convert_from_bytes as pdf
 
 from ImageCutter import *
 
 # Main function starts from here
+INSTALL_PATH = os.path.dirname(os.path.abspath(__file__))
+os.chdir(INSTALL_PATH)
 srcList = []
 
 with open("json/cropData.json", "r") as cropJson:
