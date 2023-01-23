@@ -41,7 +41,7 @@ def run(srcList, cropMode = "standard_type_A"):
 
                 # Typically first page has different form (case specific).
                 # If not, FirstImageCropPercentage would be same with ImageCropPercentage in JSON file
-                if pageNum % 4 == 1:
+                if pageNum % 4 == 1 and (leftFirstImageCropPercentage or rightFirstImageCropPercentage):
                     leftCropRange  = leftFirstImageCropPercentage
                     rightCropRange = rightFirstImageCropPercentage
                 else:
@@ -49,8 +49,12 @@ def run(srcList, cropMode = "standard_type_A"):
                     rightCropRange = rightImageCropPercentage
                 
                 # This is for Binary Cropping
-                startNum += imgBinaryCrop(f"{fileName}-PAGE#{pageNum}-L.png", dest = fileName, cropRange = leftCropRange, cropCheckRange = cropCheckRange, startNum = startNum, numDigit = 2)
-                startNum += imgBinaryCrop(f"{fileName}-PAGE#{pageNum}-R.png", dest = fileName, cropRange = rightCropRange, cropCheckRange = cropCheckRange, startNum = startNum, numDigit = 2)
+                if leftCropRange:
+                    startNum += imgBinaryCrop(f"{fileName}-PAGE#{pageNum}-L.png", dest = fileName, 
+                    cropRange = leftCropRange, cropCheckRange = cropCheckRange, startNum = startNum, numDigit = 2)
+                if rightCropRange:
+                    startNum += imgBinaryCrop(f"{fileName}-PAGE#{pageNum}-R.png", dest = fileName, 
+                    cropRange = rightCropRange, cropCheckRange = cropCheckRange, startNum = startNum, numDigit = 2)
 
                 # This is for Raw Cropping
                 #startNum += imgRawCrop(f"{fileName}-PAGE#{pageNum}-L.png", dest = f"{fileName}-halfcrop", cropRange = leftCropRange, startNum = startNum, numDigit = 2)
